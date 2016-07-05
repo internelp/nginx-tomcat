@@ -1,4 +1,5 @@
 #!/bin/bash
+
 # 用于上线后重启tomcat单机多实例集群
 # 配合nginx和tomcat
 # 创建：高峰
@@ -25,7 +26,8 @@ path=$(cd $(dirname $BASH_SOURCE); pwd)\/
 logFile=/dev/null
 # logFile=$path"reloadTomcat_"`date +%s`.log
 NGINX_CONF_HOME="/etc/nginx/conf.d"
-user=gaofeng
+TOMCAT_PID_PATH="/dev/shm"
+user="gaofeng"
 
 
 
@@ -158,7 +160,7 @@ restartTomcat () {	#根据输入的tomcat序号，重启指定的Tomcat。
 	fi
 	
 	tomcatn="tomcat$1"
-	PID=`cat /dev/shm/$tomcatn.pid`
+	PID=`cat $TOMCAT_PID_PATH/$tomcatn.pid`
 	logNotice "指定的TOMCAT\t->\t$tomcatn"
 	psPid=(`ps -ef | grep $tomcatn | grep -v grep | awk '{print $2}'`)
 	length=${#psPid[*]}
@@ -170,7 +172,7 @@ restartTomcat () {	#根据输入的tomcat序号，重启指定的Tomcat。
 		switchConf
 		exit 1
 	fi
-	
+
 	if [[ $PID -ne $psPid ]]; then
 		#statements
 		logErr "PID不符，请查看原因。"
@@ -199,7 +201,11 @@ restartTomcat () {	#根据输入的tomcat序号，重启指定的Tomcat。
 			logNotice "您指定的PID\t->\t$PID"
 		done
 	fi
-
+	if [[ -z $PID ]]; then
+		# pid没有值，说明tomcat没有启动。
+		logNotice "系统没有PID文件，也没有通过PS工具获取到tomcat的pid。"
+		logNotice "$tomcatn没有启动，将第一次启动tomcat。"
+	fi
 	# 此时已经获取了tomcatN和其pid
 	# 需要先使用pid杀进程，然后根据tomcatN号启动tomcat。
 	if [[ $1 -eq 7 ]]; then
@@ -207,7 +213,7 @@ restartTomcat () {	#根据输入的tomcat序号，重启指定的Tomcat。
 		sleepa
 		# 杀进程
 		kill -9 $PID
-		rm -rf "/dev/shm/$tomcatn.pid"
+		rm -rf "$TOMCAT_PID_PATH/$tomcatn.pid"
 		# 启动进程
 		su - $user "/usr/local/$tomcatn/bin/startup.sh"
 		logSucess 重启了Tomcat7
@@ -216,7 +222,7 @@ restartTomcat () {	#根据输入的tomcat序号，重启指定的Tomcat。
 		sleepa
 		# 杀进程
 		kill -9 $PID
-		rm -rf "/dev/shm/$tomcatn.pid"
+		rm -rf "$TOMCAT_PID_PATH/$tomcatn.pid"
 		# 启动进程
 		su - $user "/usr/local/$tomcatn/bin/startup.sh"
 		logSucess 重启了Tomcat9
@@ -235,6 +241,7 @@ if [ `id -u` -gt 0 ];then
 	logErr 	"您必须使用root身份来执行此脚本。"
 	exit	1
 fi
+
 
 
 switchConf 7
