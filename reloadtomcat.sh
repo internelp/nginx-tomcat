@@ -35,15 +35,15 @@ user="gaofeng"
 # 定义字体颜色
 logErr() {
     echo -e `date +%G/%m/%d\ %T`" [\033[31;1m错误\033[0m] \033[31;1m"$@"\033[0m"
-    echo `date +%G/%m/%d\ %T`" [错误] "$@ >> $logFile
+    echo -e `date +%G/%m/%d\ %T`" [错误] "$@ >> $logFile
 }
 logNotice(){
     echo -e `date +%G/%m/%d\ %T`" [\033[36;1m信息\033[0m] \033[36;1m"$@"\033[0m"
-    echo `date +%G/%m/%d\ %T`" [信息] "$@ >> $logFile
+    echo -e `date +%G/%m/%d\ %T`" [信息] "$@ >> $logFile
 }
 logSucess(){
     echo -e `date +%G/%m/%d\ %T`" [\033[32;1m正确\033[0m] \033[32;1m"$@"\033[0m"
-    echo `date +%G/%m/%d\ %T`" [正确] "$@ >> $logFile
+    echo -e `date +%G/%m/%d\ %T`" [正确] "$@ >> $logFile
 }
 echoRed(){
     echo -e "\033[31;1m"$@"\033[0m"
